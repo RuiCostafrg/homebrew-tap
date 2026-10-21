@@ -1,0 +1,112 @@
+name: Sync verified release
+on:
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: homebrew-sync
+  cancel-in-progress: false
+jobs:
+  verify:
+    if: >-
+      github.repository == 'RuiCostafrg/homebrew-tap' &&
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'schedule' || github.actor_id == '35194998')
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    outputs:
+      changed: ${{ steps.release.outputs.changed }}
+      tag: ${{ steps.release.outputs.tag }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - name: Find a newer stable release
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api repos/RuiCostafrg/typescript-crap/releases/latest > "$RUNNER_TEMP/release.json"
+          python3 - <<'PYTHON'
+          import json, os, pathlib, re
+          release = json.loads(pathlib.Path(os.environ['RUNNER_TEMP'], 'release.json').read_text())
+          tag = release['tag_name']
+          if release['draft'] or release['prerelease'] or not re.fullmatch(r'v[0-9]+\.[0-9]+\.[0-9]+', tag):
+              raise SystemExit('Expected a stable SemVer tag')
+          current = re.search(r'^  version "([0-9]+\.[0-9]+\.[0-9]+)"$', pathlib.Path('Formula/ts-crap.rb').read_text(), re.M)
+          if current is None:
+              raise SystemExit('Cannot read current formula version')
+          newer = tuple(map(int, tag[1:].split('.'))) > tuple(map(int, current[1].split('.')))
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              print(f'tag={tag}', file=output)
+              print(f'changed={str(newer).lower()}', file=output)
+          PYTHON
+      - name: Verify formula provenance and source identity
+        if: steps.release.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          gh release download "$TAG" --repo RuiCostafrg/typescript-crap \
+            --pattern ts-crap.rb --dir verified
+          source_sha=$(gh api "repos/RuiCostafrg/typescript-crap/commits/$TAG" --jq .sha)
+          gh attestation verify verified/ts-crap.rb --repo RuiCostafrg/typescript-crap \
+            --signer-workflow RuiCostafrg/typescript-crap/.github/workflows/release.yml \
+            --source-ref "refs/tags/$TAG" --source-digest "$source_sha" --deny-self-hosted-runners
+          # Syntax checking happens without write credentials; never eval a formula.
+          ruby -c verified/ts-crap.rb
+          echo "Verified $TAG at $source_sha" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        if: steps.release.outputs.changed == 'true'
+        with:
+          name: verified-formula
+          path: verified/ts-crap.rb
+          if-no-files-found: error
+          retention-days: 7
+  publish:
+    needs: verify
+    if: needs.verify.outputs.changed == 'true'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    environment: homebrew
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        with:
+          name: verified-formula
+          path: verified
+      - name: Commit verified formula using this repository's temporary token
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.verify.outputs.tag }}
+        run: |
+          # Use the contents API; no persisted git credential or external key.
+          # Do not execute formula contents in this privileged job.
+          sha=$(gh api "repos/$GITHUB_REPOSITORY/contents/Formula/ts-crap.rb" --jq .sha)
+          content=$(base64 -w 0 verified/ts-crap.rb)
+          gh api "repos/$GITHUB_REPOSITORY/contents/Formula/ts-crap.rb" -X PUT \
+            -f message="Update ts-crap to $TAG (verified provenance)" \
+            -f sha="$sha" -f content="$content" -f branch=main --silent
+  install:
+    needs: publish
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [macos-14, ubuntu-22.04]
+    steps:
+      - name: Test public Homebrew install
+        shell: bash
+        env:
+          HOMEBREW_NO_ANALYTICS: '1'
+        run: |
+          if [[ "$RUNNER_OS" == Linux ]]; then
+            eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+          fi
+          brew install RuiCostafrg/tap/ts-crap
+          ts-crap --version
+          ts-crap --help
