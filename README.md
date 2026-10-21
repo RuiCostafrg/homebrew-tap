@@ -23,7 +23,9 @@ brew upgrade ts-crap
 [Source, usage, and releases](https://github.com/RuiCostafrg/typescript-crap).
 This tap checks hourly (or on manual dispatch) for a newer stable release.
 It verifies GitHub provenance against the exact source workflow, tag, and commit,
-then requires RuiCostafrg approval in the protected `homebrew` environment.
+then requires RuiCostafrg approval in the protected `homebrew` environment to
+open an update PR. Read-only CI tests the proposed formula on macOS and Linux;
+RuiCostafrg merges it after checks pass.
 Updates use this repository’s short-lived GitHub token; no deploy key or personal
 access token is stored. The existing v0.1.0 formula is retained; new updates must
 have attestations. SHA-256 hashes in the formula verify the downloaded archives.

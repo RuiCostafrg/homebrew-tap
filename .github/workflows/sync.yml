@@ -49,6 +49,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.release.outputs.tag }}
         run: |
+          existing=$(gh pr list --repo "$GITHUB_REPOSITORY" --head "releases/ts-crap-$TAG" --state open --json number --jq length)
+          if [[ "$existing" != 0 ]]; then
+            echo 'An update PR is already open; review it before retrying.' >&2
+            exit 1
+          fi
           gh release download "$TAG" --repo RuiCostafrg/typescript-crap \
             --pattern ts-crap.rb --dir verified
           source_sha=$(gh api "repos/RuiCostafrg/typescript-crap/commits/$TAG" --jq .sha)
@@ -73,40 +78,31 @@ jobs:
     environment: homebrew
     permissions:
       contents: write
+      pull-requests: write
+      actions: write
     steps:
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
           name: verified-formula
           path: verified
-      - name: Commit verified formula using this repository's temporary token
+      - name: Open owner-reviewed formula update
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ needs.verify.outputs.tag }}
         run: |
-          # Use the contents API; no persisted git credential or external key.
-          # Do not execute formula contents in this privileged job.
+          # Branch changes only. Protected main still requires owner merge.
+          branch="releases/ts-crap-$TAG"
+          base=$(gh api "repos/$GITHUB_REPOSITORY/commits/main" --jq .sha)
           sha=$(gh api "repos/$GITHUB_REPOSITORY/contents/Formula/ts-crap.rb" --jq .sha)
           content=$(base64 -w 0 verified/ts-crap.rb)
+          gh api "repos/$GITHUB_REPOSITORY/git/refs" -X POST -f ref="refs/heads/$branch" -f sha="$base" --silent
           gh api "repos/$GITHUB_REPOSITORY/contents/Formula/ts-crap.rb" -X PUT \
             -f message="Update ts-crap to $TAG (verified provenance)" \
-            -f sha="$sha" -f content="$content" -f branch=main --silent
-  install:
-    needs: publish
-    runs-on: ${{ matrix.runner }}
-    timeout-minutes: 15
-    strategy:
-      fail-fast: false
-      matrix:
-        runner: [macos-14, ubuntu-22.04]
-    steps:
-      - name: Test public Homebrew install
-        shell: bash
-        env:
-          HOMEBREW_NO_ANALYTICS: '1'
-        run: |
-          if [[ "$RUNNER_OS" == Linux ]]; then
-            eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-          fi
-          brew install RuiCostafrg/tap/ts-crap
-          ts-crap --version
-          ts-crap --help
+            -f sha="$sha" -f content="$content" -f branch="$branch" --silent
+          cat > "$RUNNER_TEMP/body.md" <<'BODY'
+          The read-only sync job verified this formula against the source release workflow, tag and commit using GitHub artifact attestations. Review the change and passing Tap CI before merging. This PR is created by the owner-approved homebrew environment job using a temporary token.
+          BODY
+          gh pr create --repo "$GITHUB_REPOSITORY" --base main --head "$branch" \
+            --title "Update ts-crap to $TAG" --body-file "$RUNNER_TEMP/body.md"
+          # Token-originated pushes do not start CI; dispatch the read-only checks.
+          gh workflow run ci.yml --repo "$GITHUB_REPOSITORY" --ref "$branch"

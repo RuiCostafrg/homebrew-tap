@@ -4,7 +4,10 @@ permissions:
   contents: read
 jobs:
   workflows:
-    if: github.repository == 'RuiCostafrg/homebrew-tap' && github.actor_id == '35194998'
+    if: >-
+      github.repository == 'RuiCostafrg/homebrew-tap' &&
+      (github.actor_id == '35194998' ||
+       (github.actor == 'github-actions[bot]' && github.event_name == 'workflow_dispatch' && startsWith(github.ref, 'refs/heads/releases/ts-crap-v')))
     runs-on: ubuntu-22.04
     timeout-minutes: 10
     steps:
@@ -20,3 +23,28 @@ jobs:
           tar -xzf "$RUNNER_TEMP/actionlint.tar.gz" -C "$RUNNER_TEMP" actionlint
           "$RUNNER_TEMP/actionlint"
       - run: ruby -c Formula/ts-crap.rb
+  install:
+    needs: workflows
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [macos-14, ubuntu-22.04]
+    steps:
+      - name: Test the exact proposed formula on a read-only runner
+        shell: bash
+        env:
+          HOMEBREW_NO_ANALYTICS: '1'
+          HOMEBREW_NO_AUTO_UPDATE: '1'
+        run: |
+          if [[ "$RUNNER_OS" == Linux ]]; then
+            eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+          fi
+          brew tap RuiCostafrg/tap
+          tap_dir=$(brew --repository RuiCostafrg/tap)
+          git -C "$tap_dir" fetch origin "$GITHUB_SHA"
+          git -C "$tap_dir" checkout --detach "$GITHUB_SHA"
+          brew install RuiCostafrg/tap/ts-crap
+          ts-crap --version
+          ts-crap --help
