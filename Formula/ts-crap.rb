@@ -1,25 +1,25 @@
 class TsCrap < Formula
   desc "Source-aware CRAP scores for TypeScript functions"
   homepage "https://github.com/RuiCostafrg/typescript-crap"
-  version "0.1.0"
+  version "0.1.1"
   if OS.mac?
     if Hardware::CPU.arm?
-      url "https://github.com/RuiCostafrg/typescript-crap/releases/download/v0.1.0/ts-crap-aarch64-apple-darwin.tar.xz"
-      sha256 "ce87b0b2c158daa32a32cd9d54b5afe3def4fbb000f145fb092154243e7eb287"
+      url "https://github.com/RuiCostafrg/typescript-crap/releases/download/v0.1.1/ts-crap-aarch64-apple-darwin.tar.xz"
+      sha256 "fa1fb8386eef1c995058dada8f7efb87436313f80544716d2ef08c426a1a806e"
     end
     if Hardware::CPU.intel?
-      url "https://github.com/RuiCostafrg/typescript-crap/releases/download/v0.1.0/ts-crap-x86_64-apple-darwin.tar.xz"
-      sha256 "a70951df5569f9d62ebc9882fbbeae923f9d23e5ac65791f604f52eb0b11a9a1"
+      url "https://github.com/RuiCostafrg/typescript-crap/releases/download/v0.1.1/ts-crap-x86_64-apple-darwin.tar.xz"
+      sha256 "58eed3d62e679c84a8f2919fa5e7ad1c13d1cb9d1d29da50df80022145ff89dc"
     end
   end
   if OS.linux?
     if Hardware::CPU.arm?
-      url "https://github.com/RuiCostafrg/typescript-crap/releases/download/v0.1.0/ts-crap-aarch64-unknown-linux-gnu.tar.xz"
-      sha256 "6cafbecde21468d8a410dab898f8b474bc6537bf1f5b395ffbd62655178de980"
+      url "https://github.com/RuiCostafrg/typescript-crap/releases/download/v0.1.1/ts-crap-aarch64-unknown-linux-gnu.tar.xz"
+      sha256 "7d16cd151d79a9f91b36974cad9d5ddb138c735c07b9f666628bf884ed2d3c9b"
     end
     if Hardware::CPU.intel?
-      url "https://github.com/RuiCostafrg/typescript-crap/releases/download/v0.1.0/ts-crap-x86_64-unknown-linux-gnu.tar.xz"
-      sha256 "87903d791a16ccd171a9d30695391d64d71922a86adc3c61eeb2ceae7fbedb83"
+      url "https://github.com/RuiCostafrg/typescript-crap/releases/download/v0.1.1/ts-crap-x86_64-unknown-linux-gnu.tar.xz"
+      sha256 "708ad7489388aaa62745b73778024edef048a9861dc7d4298b02a027bdad17a3"
     end
   end
   license "MIT"
