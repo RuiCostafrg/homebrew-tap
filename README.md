@@ -27,5 +27,5 @@ then requires RuiCostafrg approval in the protected `homebrew` environment to
 open an update PR. Read-only CI tests the proposed formula on macOS and Linux;
 RuiCostafrg merges it after checks pass.
 Updates use this repository’s short-lived GitHub token; no deploy key or personal
-access token is stored. The existing v0.1.0 formula is retained; new updates must
-have attestations. SHA-256 hashes in the formula verify the downloaded archives.
+access token is stored. An already-open release update is a successful no-op on subsequent syncs;
+new updates must have attestations. SHA-256 hashes in the formula verify the downloaded archives.
