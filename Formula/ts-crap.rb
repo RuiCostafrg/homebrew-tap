@@ -1,25 +1,25 @@
 class TsCrap < Formula
   desc "Source-aware CRAP scores for TypeScript functions"
   homepage "https://github.com/RuiCostafrg/typescript-crap"
-  version "2.1.0"
+  version "2.2.1"
   if OS.mac?
     if Hardware::CPU.arm?
-      url "https://github.com/RuiCostafrg/typescript-crap/releases/download/v2.1.0/ts-crap-aarch64-apple-darwin.tar.xz"
-      sha256 "8cb4272f5ae58322f99fcec4210393737b4da24dc57fbe3571e876c175f12e62"
+      url "https://github.com/RuiCostafrg/typescript-crap/releases/download/v2.2.1/ts-crap-aarch64-apple-darwin.tar.xz"
+      sha256 "771f4dcecc34b6358f084f020b72dcb69668ececfe497521ecad2c775803f3f1"
     end
     if Hardware::CPU.intel?
-      url "https://github.com/RuiCostafrg/typescript-crap/releases/download/v2.1.0/ts-crap-x86_64-apple-darwin.tar.xz"
-      sha256 "b7f8a3a3569231d51ebacad39eecb8fc8b672de33c3bdd8f83ea6f291e981e0d"
+      url "https://github.com/RuiCostafrg/typescript-crap/releases/download/v2.2.1/ts-crap-x86_64-apple-darwin.tar.xz"
+      sha256 "eca4575c0df7a30536412a49572aef69bb2889c1efdca6d42a2e3c0fac4fb36a"
     end
   end
   if OS.linux?
     if Hardware::CPU.arm?
-      url "https://github.com/RuiCostafrg/typescript-crap/releases/download/v2.1.0/ts-crap-aarch64-unknown-linux-gnu.tar.xz"
-      sha256 "1d728533edb3fd7ebd055af165684b4f23f95571e8d90fce4b5e209d0f564119"
+      url "https://github.com/RuiCostafrg/typescript-crap/releases/download/v2.2.1/ts-crap-aarch64-unknown-linux-gnu.tar.xz"
+      sha256 "3bf8bdfb75ba0b24a5825342ce0245dadb6c7c5f64d0dc6f35792497fcbe6143"
     end
     if Hardware::CPU.intel?
-      url "https://github.com/RuiCostafrg/typescript-crap/releases/download/v2.1.0/ts-crap-x86_64-unknown-linux-gnu.tar.xz"
-      sha256 "4152ccacbaeb2e0ae8a4a140d8aa1ab4c67c961720a20c0dd49f2611a4b280a7"
+      url "https://github.com/RuiCostafrg/typescript-crap/releases/download/v2.2.1/ts-crap-x86_64-unknown-linux-gnu.tar.xz"
+      sha256 "d605d0213cf173461d4565a86181e8d738d53a5dbce2b4f45a6647353adea4ad"
     end
   end
   license "MIT"
@@ -27,9 +27,13 @@ class TsCrap < Formula
   BINARY_ALIASES = {
     "aarch64-apple-darwin": {},
     "aarch64-unknown-linux-gnu": {},
+    "aarch64-unknown-linux-musl-dynamic": {},
+    "aarch64-unknown-linux-musl-static": {},
     "x86_64-apple-darwin": {},
     "x86_64-pc-windows-gnu": {},
-    "x86_64-unknown-linux-gnu": {}
+    "x86_64-unknown-linux-gnu": {},
+    "x86_64-unknown-linux-musl-dynamic": {},
+    "x86_64-unknown-linux-musl-static": {}
   }
 
   def target_triple
