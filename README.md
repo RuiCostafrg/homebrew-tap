@@ -1,3 +1,5 @@
+![homebrew-tap banner](assets/readme-banner.svg)
+
 # Homebrew tap
 
 Prebuilt command-line tools maintained by [RuiCostafrg](https://github.com/RuiCostafrg).
