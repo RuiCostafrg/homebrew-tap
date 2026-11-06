@@ -22,7 +22,7 @@ x86_64, checksum-verified, same as CI); Homebrew-on-Linux for the optional
 
 ```bash
 scripts/local-ci.sh                # stages: workflows (actionlint + formula syntax)
-scripts/local-ci.sh install        # also brew-install the formula end to end
+scripts/local-ci.sh install        # brew-install the formula only (skips the workflows stage)
 scripts/local-ci.sh --no-signoff   # checks only, no statuses posted
 ```
 
