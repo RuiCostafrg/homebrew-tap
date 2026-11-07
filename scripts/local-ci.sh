@@ -3,7 +3,7 @@
 # Mirrors .github/workflows/ci.yml (workflows job: actionlint + formula syntax;
 # install job: brew install of the formula).
 # Usage:
-#   scripts/local-ci.sh               stages: workflows (formula install)
+#   scripts/local-ci.sh               stages: workflows (actionlint + formula syntax)
 #   scripts/local-ci.sh install       selected stages only
 #   scripts/local-ci.sh --no-signoff  run checks, don't post signoff statuses
 #   scripts/local-ci.sh --help        this text
