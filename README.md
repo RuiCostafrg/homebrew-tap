@@ -21,6 +21,23 @@ brew upgrade ts-crap
 ```
 
 [Source, usage, and releases](https://github.com/RuiCostafrg/typescript-crap).
+
+## dotnet-crap
+
+A quality gate for C# callable CRAP scores. Installs a precompiled binary; Rust
+and the .NET SDK are not needed to scan.
+
+```sh
+brew install RuiCostafrg/tap/dotnet-crap
+dotnet-crap --help
+```
+
+Supports macOS (Apple Silicon and Intel) and Linux (ARM64 and x86-64 glibc builds).
+The formula is added by the first verified sync after dotnet-crap's first stable
+release; it is synced the same way as ts-crap below.
+[Source, usage, and releases](https://github.com/RuiCostafrg/dotnet-crap).
+
+## Updates
 This tap checks hourly (or on manual dispatch) for a newer stable release.
 It verifies GitHub provenance against the exact source workflow, tag, and commit,
 then requires RuiCostafrg approval in the protected `homebrew` environment to

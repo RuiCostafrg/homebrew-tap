@@ -7,7 +7,7 @@ jobs:
     if: >-
       github.repository == 'RuiCostafrg/homebrew-tap' &&
       (github.actor_id == '35194998' ||
-       (github.actor == 'github-actions[bot]' && github.event_name == 'workflow_dispatch' && startsWith(github.ref, 'refs/heads/releases/ts-crap-v')))
+       (github.actor == 'github-actions[bot]' && github.event_name == 'workflow_dispatch' && (startsWith(github.ref, 'refs/heads/releases/ts-crap-v') || startsWith(github.ref, 'refs/heads/releases/dotnet-crap-v'))))
     runs-on: ubuntu-26.04
     timeout-minutes: 10
     steps:
@@ -22,7 +22,7 @@ jobs:
           echo "8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8  $RUNNER_TEMP/actionlint.tar.gz" | sha256sum --check
           tar -xzf "$RUNNER_TEMP/actionlint.tar.gz" -C "$RUNNER_TEMP" actionlint
           "$RUNNER_TEMP/actionlint"
-      - run: ruby -c Formula/ts-crap.rb
+      - run: for formula in Formula/*.rb; do ruby -c "$formula"; done
   install:
     needs: workflows
     runs-on: ${{ matrix.runner }}
@@ -48,3 +48,9 @@ jobs:
           brew install RuiCostafrg/tap/ts-crap
           ts-crap --version
           ts-crap --help
+          # dotnet-crap is added by its first verified sync PR.
+          if [[ -f "$tap_dir/Formula/dotnet-crap.rb" ]]; then
+            brew install RuiCostafrg/tap/dotnet-crap
+            dotnet-crap --version
+            dotnet-crap --help
+          fi
