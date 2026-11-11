@@ -123,6 +123,9 @@ jobs:
       (github.event_name == 'schedule' || github.actor_id == '35194998')
     runs-on: ubuntu-26.04
     timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: read
     outputs:
       changed: ${{ steps.release.outputs.changed == 'true' && steps.pending.outputs.exists == 'false' }}
       tag: ${{ steps.release.outputs.tag }}
@@ -135,6 +138,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          gh api repos/RuiCostafrg/dotnet-crap --jq .full_name >/dev/null
           if ! gh api repos/RuiCostafrg/dotnet-crap/releases/latest > "$RUNNER_TEMP/release.json" 2> "$RUNNER_TEMP/release.err"; then
             # Until the first dotnet-crap release, there is nothing to sync.
             grep -q 'HTTP 404' "$RUNNER_TEMP/release.err" || { cat "$RUNNER_TEMP/release.err" >&2; exit 1; }
@@ -217,7 +221,12 @@ jobs:
           branch="releases/dotnet-crap-$TAG"
           base=$(gh api "repos/$GITHUB_REPOSITORY/commits/main" --jq .sha)
           # Branch changes only. Protected main still requires owner merge.
-          gh api "repos/$GITHUB_REPOSITORY/git/refs" -X POST -f ref="refs/heads/$branch" -f sha="$base" --silent
+          # A branch left by an earlier attempt (no open PR) is reset to main.
+          if gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/$branch" --silent 2>/dev/null; then
+            gh api "repos/$GITHUB_REPOSITORY/git/refs/heads/$branch" -X PATCH -f sha="$base" -F force=true --silent
+          else
+            gh api "repos/$GITHUB_REPOSITORY/git/refs" -X POST -f ref="refs/heads/$branch" -f sha="$base" --silent
+          fi
           # Bootstrap: Formula/dotnet-crap.rb does not exist yet, so the first
           # sync must create the file (contents PUT without sha) instead of
           # updating it (contents PUT with the existing blob's sha).
@@ -234,7 +243,8 @@ jobs:
           cat > "$RUNNER_TEMP/body.md" <<'BODY'
           The read-only sync job verified this dotnet-crap formula against the source release workflow, tag and commit using GitHub artifact attestations. Review the change and passing Tap CI before merging. This PR is created by the owner-approved homebrew environment job using a temporary token.
           BODY
+          # Token-originated pushes do not start CI; dispatch the read-only checks
+          # before opening the PR, so a failed dispatch is retried by the next sync.
+          gh workflow run ci.yml --repo "$GITHUB_REPOSITORY" --ref "$branch"
           gh pr create --repo "$GITHUB_REPOSITORY" --base main --head "$branch" \
             --title "$title" --body-file "$RUNNER_TEMP/body.md"
-          # Token-originated pushes do not start CI; dispatch the read-only checks.
-          gh workflow run ci.yml --repo "$GITHUB_REPOSITORY" --ref "$branch"

@@ -5,8 +5,9 @@ pull requests are restricted to collaborators. Security vulnerabilities should
 be reported privately via the repository Security tab.
 
 The sync workflow only accepts a strictly newer stable release from
-RuiCostafrg/typescript-crap. It verifies the formula’s attestation against the
-source repository, release workflow, tag and commit on a read-only runner.
+RuiCostafrg/typescript-crap (`ts-crap.rb`) or RuiCostafrg/dotnet-crap
+(`dotnet-crap.rb`). It verifies each formula’s attestation against its source
+repository, release workflow, tag and commit on a read-only runner.
 Opening an automated update PR requires owner approval in the `homebrew` environment and uses only
 a temporary GITHUB_TOKEN scoped to this repository. The write job treats the
 formula as data and never executes it. Runtime installation tests happen in
