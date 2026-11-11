@@ -67,16 +67,19 @@ stage_workflows() {
   require curl ""
   run_actionlint
   require ruby ""
-  ruby -c Formula/ts-crap.rb
+  for formula in Formula/*.rb; do ruby -c "$formula"; done
 }
 
 stage_install() {
   # Like the CI install job, against the checked-out formula, on Linux Homebrew.
   require brew "Homebrew on Linux — https://docs.brew.sh/Homebrew-on-Linux"
   export HOMEBREW_NO_ANALYTICS=1 HOMEBREW_NO_AUTO_UPDATE=1
-  brew install --build-from-source "$PWD/Formula/ts-crap.rb"
-  ts-crap --version >/dev/null
-  ts-crap --help >/dev/null
+  for formula in Formula/*.rb; do
+    name=$(basename "$formula" .rb)
+    brew install --build-from-source "$PWD/$formula"
+    "$name" --version >/dev/null
+    "$name" --help >/dev/null
+  done
 }
 
 # ── runner ────────────────────────────────────────────────────────────────────
