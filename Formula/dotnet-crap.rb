@@ -1,25 +1,25 @@
 class DotnetCrap < Formula
   desc "C# callable complexity and source-bound CRAP quality gates"
   homepage "https://github.com/RuiCostafrg/dotnet-crap"
-  version "0.2.0"
+  version "0.2.1"
   if OS.mac?
     if Hardware::CPU.arm?
-      url "https://github.com/RuiCostafrg/dotnet-crap/releases/download/v0.2.0/dotnet-crap-aarch64-apple-darwin.tar.xz"
-      sha256 "e525247f0a850fb7a4fadb0bcc6b18fb01da008fc3546640429e73385515805b"
+      url "https://github.com/RuiCostafrg/dotnet-crap/releases/download/v0.2.1/dotnet-crap-aarch64-apple-darwin.tar.xz"
+      sha256 "0bb264bdd71e5935c867448c3e39a16e1be1c2eac7079d28bb2e17546eab6bbb"
     end
     if Hardware::CPU.intel?
-      url "https://github.com/RuiCostafrg/dotnet-crap/releases/download/v0.2.0/dotnet-crap-x86_64-apple-darwin.tar.xz"
-      sha256 "6b92d712f0caf69b3464784b3d202043be9a4a8c89ecb40866b21b9ea6971dd0"
+      url "https://github.com/RuiCostafrg/dotnet-crap/releases/download/v0.2.1/dotnet-crap-x86_64-apple-darwin.tar.xz"
+      sha256 "70b2e6455e2c7d1e4850cbdfbcab232075f3b55e506d69a80baa7bca2664eb80"
     end
   end
   if OS.linux?
     if Hardware::CPU.arm?
-      url "https://github.com/RuiCostafrg/dotnet-crap/releases/download/v0.2.0/dotnet-crap-aarch64-unknown-linux-gnu.tar.xz"
-      sha256 "fa6d78142f3125215cff9f719c5b1062c7e94b313cd3a491e686757707050ea7"
+      url "https://github.com/RuiCostafrg/dotnet-crap/releases/download/v0.2.1/dotnet-crap-aarch64-unknown-linux-gnu.tar.xz"
+      sha256 "4e8910a8fbd89d9252033f8ee80f1f7600e51d7816ceba9b4c4d907bad106505"
     end
     if Hardware::CPU.intel?
-      url "https://github.com/RuiCostafrg/dotnet-crap/releases/download/v0.2.0/dotnet-crap-x86_64-unknown-linux-gnu.tar.xz"
-      sha256 "50bbe9493f264ea7d1b115b9b5b4c7d5ce51c8effc93f9ddb936160431a33bf9"
+      url "https://github.com/RuiCostafrg/dotnet-crap/releases/download/v0.2.1/dotnet-crap-x86_64-unknown-linux-gnu.tar.xz"
+      sha256 "36094b1692070d3665127a9b4eb05b62dd80a392485161e3f354283b8bee1f97"
     end
   end
   license "MIT"
