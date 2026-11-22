@@ -1,0 +1,84 @@
+# Shadow run for homebrew-tap: add as .github/workflows/verify-shadow.yml.
+#
+# Runs the kit's reusable verifier for both formulas and only reports what it
+# found, so the results can be compared with the tap's current verification
+# jobs before replacing them. It cannot write: read-only permissions, no
+# secrets, no `homebrew` environment, no branches, no PRs, no CI dispatch.
+#
+# The kit is pinned to a reviewed verified-release-kit commit by full SHA.
+# The reusable workflow refuses any pin that is not a full commit SHA.
+name: Verify formulas (shadow)
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+  pull-requests: read
+  attestations: read
+  actions: read
+jobs:
+  typescript-crap:
+    if: >-
+      github.repository == 'RuiCostafrg/homebrew-tap' &&
+      github.ref == 'refs/heads/main' &&
+      github.actor_id == '35194998'
+    permissions:
+      contents: read
+      pull-requests: read
+      attestations: read
+      actions: read
+    uses: RuiCostafrg/verified-release-kit/.github/workflows/verify-homebrew-formula.yml@d92313fd5efe469a552cd81bcbce87aa3df8c418
+    with:
+      source-repository: RuiCostafrg/typescript-crap
+      workflow-path: .github/workflows/release.yml
+      formula: ts-crap
+      allow-bootstrap: false
+      base-branch: main
+  dotnet-crap:
+    if: >-
+      github.repository == 'RuiCostafrg/homebrew-tap' &&
+      github.ref == 'refs/heads/main' &&
+      github.actor_id == '35194998'
+    permissions:
+      contents: read
+      pull-requests: read
+      attestations: read
+      actions: read
+    uses: RuiCostafrg/verified-release-kit/.github/workflows/verify-homebrew-formula.yml@d92313fd5efe469a552cd81bcbce87aa3df8c418
+    with:
+      source-repository: RuiCostafrg/dotnet-crap
+      workflow-path: .github/workflows/release.yml
+      formula: dotnet-crap
+      allow-bootstrap: true
+      base-branch: main
+  summary:
+    needs: [typescript-crap, dotnet-crap]
+    if: always() && github.repository == 'RuiCostafrg/homebrew-tap'
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      - name: Write the shadow results to the job summary
+        env:
+          TS_RESULT: ${{ needs.typescript-crap.result }}
+          TS_CANDIDATE: ${{ needs.typescript-crap.outputs.candidate }}
+          TS_TAG: ${{ needs.typescript-crap.outputs.tag }}
+          TS_SOURCE_SHA: ${{ needs.typescript-crap.outputs.source-sha }}
+          TS_FORMULA_SHA256: ${{ needs.typescript-crap.outputs.formula-sha256 }}
+          TS_ARTIFACT_ID: ${{ needs.typescript-crap.outputs.artifact-id }}
+          DOTNET_RESULT: ${{ needs.dotnet-crap.result }}
+          DOTNET_CANDIDATE: ${{ needs.dotnet-crap.outputs.candidate }}
+          DOTNET_TAG: ${{ needs.dotnet-crap.outputs.tag }}
+          DOTNET_SOURCE_SHA: ${{ needs.dotnet-crap.outputs.source-sha }}
+          DOTNET_FORMULA_SHA256: ${{ needs.dotnet-crap.outputs.formula-sha256 }}
+          DOTNET_ARTIFACT_ID: ${{ needs.dotnet-crap.outputs.artifact-id }}
+        run: |
+          {
+            echo '## Shadow verification (read-only; nothing was published)'
+            echo
+            echo '| Formula | Job result | Candidate | Tag | Source SHA | Formula SHA-256 | Artifact ID |'
+            echo '|---|---|---|---|---|---|---|'
+            echo "| ts-crap | ${TS_RESULT} | ${TS_CANDIDATE:-n/a} | ${TS_TAG:-n/a} | ${TS_SOURCE_SHA:-n/a} | ${TS_FORMULA_SHA256:-n/a} | ${TS_ARTIFACT_ID:-n/a} |"
+            echo "| dotnet-crap | ${DOTNET_RESULT} | ${DOTNET_CANDIDATE:-n/a} | ${DOTNET_TAG:-n/a} | ${DOTNET_SOURCE_SHA:-n/a} | ${DOTNET_FORMULA_SHA256:-n/a} | ${DOTNET_ARTIFACT_ID:-n/a} |"
+            echo
+            echo 'Compare these with the current verification jobs for the same releases.'
+          } >> "$GITHUB_STEP_SUMMARY"
