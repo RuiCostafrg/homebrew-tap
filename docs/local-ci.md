@@ -26,10 +26,13 @@ scripts/local-ci.sh install        # brew-install the formula only (skips the wo
 scripts/local-ci.sh --no-signoff   # checks only, no statuses posted
 ```
 
-Push your commits first: `gh signoff` only attests pushed work. Failing stages post
-a red `signoff/<stage>` status automatically. Each status (green or red) is bound
-with `--commit` to the exact commit captured at the start of its stage, so a
-commit or push landing mid-run can never be green-lit for code it did not test.
+Commit and push your changes before signing off. The runner rejects a dirty
+checkout before running checks, verifies that HEAD and the worktree remain
+stable, and posts to the tested commit. A failed stage attempts to post a red
+`signoff/<stage>` status. Use `--no-signoff` to check local edits.
+
+The runner and checksum are vendored from verified-release-kit. The tap
+defines its local checks in `scripts/local-ci.stages.sh`.
 
 ## Optional: make sign-off a merge requirement
 
@@ -42,5 +45,8 @@ gh signoff uninstall
 
 - `workflows` checks every `.github/workflows/*.yml` with actionlint, so
   `sync.yml` is covered too.
-- The `install` stage builds against your local tap checkout rather than fetching
-  the pushed tap ref as CI does; run it as a final acceptance check.
+- The `install` stage loads the formulas by name from the Homebrew checkout. Run
+  it from `$(brew --repository RuiCostafrg/tap)` in a disposable Homebrew prefix
+  with neither formula installed. For a differently named local tap, set
+  `LOCAL_CI_BREW_TAP` to its name. The runner verifies that Homebrew points to
+  the same checkout before installing either formula.
