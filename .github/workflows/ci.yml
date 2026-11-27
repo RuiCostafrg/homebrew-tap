@@ -7,7 +7,7 @@ jobs:
     if: >-
       github.repository == 'RuiCostafrg/homebrew-tap' &&
       (github.actor_id == '35194998' ||
-       (github.actor == 'github-actions[bot]' && github.event_name == 'workflow_dispatch' && (startsWith(github.ref, 'refs/heads/releases/ts-crap-v') || startsWith(github.ref, 'refs/heads/releases/dotnet-crap-v'))))
+       (github.actor == 'github-actions[bot]' && github.event_name == 'workflow_dispatch' && (startsWith(github.ref, 'refs/heads/releases/ts-crap-v') || startsWith(github.ref, 'refs/heads/releases/dotnet-crap-v') || startsWith(github.ref, 'refs/heads/releases/oximut-v'))))
     runs-on: ubuntu-26.04
     timeout-minutes: 10
     steps:
@@ -54,3 +54,25 @@ jobs:
             dotnet-crap --version
             dotnet-crap --help
           fi
+
+  install-oximut:
+    needs: workflows
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      HOMEBREW_NO_ANALYTICS: '1'
+      HOMEBREW_NO_AUTO_UPDATE: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install and test the exact proposed Oximut formula
+        if: hashFiles('Formula/oximut.rb') != ''
+        shell: bash
+        run: |
+          set -euo pipefail
+          eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+          brew tap --custom-remote RuiCostafrg/tap "$GITHUB_WORKSPACE"
+          brew install RuiCostafrg/tap/oximut
+          brew test RuiCostafrg/tap/oximut
+          oximut --version
